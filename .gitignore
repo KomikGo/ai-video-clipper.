@@ -1,0 +1,7 @@
+.env
+work/
+*.mp4
+*.srt
+__pycache__/
+*.py[cod]
+.venv/
