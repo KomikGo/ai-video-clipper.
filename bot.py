@@ -11,7 +11,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 MODEL_NAME = os.getenv("WHISPER_MODEL", "tiny")
 MAX_CLIPS = max(1, min(int(os.getenv("MAX_CLIPS", "3")), 5))
 CLIP_SECONDS = max(15, min(int(os.getenv("CLIP_SECONDS", "45")), 90))
-URL_RE = re.compile(r"https?://\\S+", re.I)
+URL_RE = re.compile(r"https?://\S+", re.I)
 model = None
 
 def run(cmd):
@@ -49,7 +49,7 @@ def write_srt(segs,a,b,path):
         x=max(a,s.start); y=min(b,s.end); txt=(s.text or "").strip()
         if y>x and txt:
             rows += [str(idx),f"{srt_time(x-a)} --> {srt_time(y-a)}",txt,""]; idx+=1
-    Path(path).write_text("\\n".join(rows),encoding="utf-8")
+    Path(path).write_text("\n".join(rows),encoding="utf-8")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Kirim URL video yang Anda miliki atau berhak gunakan. Saya akan mencoba membuat klip vertikal dengan subtitle Bahasa Indonesia. Tidak semua situs didukung.")
