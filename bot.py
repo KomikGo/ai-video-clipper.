@@ -94,10 +94,26 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await status.edit_text("❌ Gagal memproses video. Platform mungkin membatasi akses atau server kehabisan sumber daya.\n\n"+str(e)[-800:])
 
 def main():
-    if not TOKEN: raise SystemExit("Atur TELEGRAM_BOT_TOKEN sebagai environment secret.")
-    app=Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start",start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,handle))
-    app.run_polling(drop_pending_updates=True)
+    if not TOKEN:
+        raise SystemExit("TELEGRAM_BOT_TOKEN belum diatur sebagai environment secret.")
+    public_url = os.getenv("WEBHOOK_URL", "").rstrip("/")
+    webhook_path = os.getenv("WEBHOOK_PATH", "telegram-webhook")
+    secret = os.getenv("WEBHOOK_SECRET_TOKEN", "")
+    if not public_url.startswith("https://"):
+        raise SystemExit("WEBHOOK_URL harus berupa URL https:// dari Render.")
+    if not secret:
+        raise SystemExit("WEBHOOK_SECRET_TOKEN belum diatur sebagai environment secret.")
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle))
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.getenv("PORT", "10000")),
+        url_path=webhook_path,
+        webhook_url=f"{public_url}/{webhook_path}",
+        secret_token=secret,
+        drop_pending_updates=True,
+    )
 
-if __name__=="__main__": main()
+if __name__ == "__main__":
+    main()
