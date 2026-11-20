@@ -47,7 +47,7 @@ async def main():
             a=max(0,float(s.start)); b=min(dur,a+CLIP_SECONDS)
             if b-a<12: continue
             score=len((s.text or "").split())/max(1,b-a)
-            if not any(abs(a,x[0])<CLIP_SECONDS*.7 for x in ranked): ranked.append((a,b,score))
+            if not any(abs(a-x[0])<CLIP_SECONDS*.7 for x in ranked): ranked.append((a,b,score))
         ranked.sort(key=lambda x:x[2],reverse=True)
         chosen=sorted(ranked[:MAX_CLIPS],key=lambda x:x[0])
         if not chosen: chosen=[(0,min(dur,CLIP_SECONDS),0)]
