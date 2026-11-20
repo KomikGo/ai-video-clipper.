@@ -1,0 +1,35 @@
+name: Process video clip request
+on:
+  repository_dispatch:
+    types: [clip_request]
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: Video URL
+        required: true
+        type: string
+      chat_id:
+        description: Telegram chat ID
+        required: true
+        type: string
+jobs:
+  clip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Install Python packages
+        run: pip install yt-dlp faster-whisper python-telegram-bot==21.10
+      - name: Process video
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
+          CHAT_ID: ${{ github.event.client_payload.chat_id || inputs.chat_id }}
+        run: python clip_job.py
