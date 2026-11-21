@@ -10,8 +10,8 @@ CHAT=int(os.environ["CHAT_ID"])
 MAX_CLIPS=3
 CLIP_SECONDS=45
 
-def run(cmd):
-    p=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+def run(cmd,cwd=None):
+    p=subprocess.run(cmd,cwd=cwd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
     if p.returncode: raise RuntimeError((p.stderr or "FFmpeg gagal")[-2800:])
     return p.stdout
 
@@ -59,9 +59,9 @@ async def main():
                 if y>x and txt:
                     rows.extend([str(n),f"{stamp(x-a)} --> {stamp(y-a)}",txt,""]); n+=1
             srt.write_text("\n".join(rows),encoding="utf-8")
-            sub=str(srt).replace("\\","\\\\").replace(":","\\:")
-            vf=f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles='{sub}':force_style='FontName=DejaVu Sans,FontSize=18,Outline=2,Alignment=2,MarginV=100'"
-            run(["ffmpeg","-y","-ss",str(a),"-i",str(source),"-t",str(b-a),"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","26","-c:a","aac","-b:a","128k","-movflags","+faststart",str(out)])
+            # Use a simple relative subtitle filename to avoid FFmpeg filter path parsing issues
+            vf="scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles=filename=1.srt:force_style='FontName=DejaVu Sans,FontSize=18,Outline=2,Alignment=2,MarginV=100'"
+            run(["ffmpeg","-y","-ss",str(a),"-i",str(source),"-t",str(b-a),"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","26","-c:a","aac","-b:a","128k","-movflags","+faststart",str(out)],cwd=folder)
             if out.stat().st_size<49*1024*1024:
                 with out.open("rb") as f: await bot.send_video(CHAT,video=f,caption=f"Klip {i}/{len(chosen)}",supports_streaming=True,read_timeout=180,write_timeout=180)
             else: await bot.send_message(CHAT,f"Klip {i} terlalu besar untuk dikirim.")
