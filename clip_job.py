@@ -59,9 +59,10 @@ async def main():
                 if y>x and txt:
                     rows.extend([str(n),f"{stamp(x-a)} --> {stamp(y-a)}",txt,""]); n+=1
             srt.write_text("\n".join(rows),encoding="utf-8")
-            # Use a simple relative subtitle filename to avoid FFmpeg filter path parsing issues
-            vf="scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles=filename=1.srt:force_style='FontName=DejaVu Sans,FontSize=18,Outline=2,Alignment=2,MarginV=100'"
-            run(["ffmpeg","-y","-ss",str(a),"-i",str(source),"-t",str(b-a),"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","26","-c:a","aac","-b:a","128k","-movflags","+faststart",str(out)],cwd=folder)
+            if not srt.exists(): raise RuntimeError(f"File subtitle tidak ditemukan: {srt}")
+            subpath=srt.resolve().as_posix().replace(":", "\\:")
+            vf=f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles=filename='{subpath}':force_style='FontName=DejaVu Sans,FontSize=18,Outline=2,Alignment=2,MarginV=100'"
+            run(["ffmpeg","-y","-ss",str(a),"-i",str(source),"-t",str(b-a),"-vf",vf,"-c:v","libx264","-preset","veryfast","-crf","26","-c:a","aac","-b:a","128k","-movflags","+faststart",str(out)])
             if out.stat().st_size<49*1024*1024:
                 with out.open("rb") as f: await bot.send_video(CHAT,video=f,caption=f"Klip {i}/{len(chosen)}",supports_streaming=True,read_timeout=180,write_timeout=180)
             else: await bot.send_message(CHAT,f"Klip {i} terlalu besar untuk dikirim.")
