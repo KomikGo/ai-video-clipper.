@@ -12,7 +12,7 @@ CLIP_SECONDS=45
 
 def run(cmd):
     p=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-    if p.returncode: raise RuntimeError((p.stderr or "FFmpeg gagal")[-1000:])
+    if p.returncode: raise RuntimeError((p.stderr or "FFmpeg gagal")[-2800:])
     return p.stdout
 
 def duration(path):
@@ -73,5 +73,5 @@ if __name__=="__main__":
     except Exception as e:
         import asyncio
         async def report():
-            await Bot(TOKEN).send_message(CHAT,"❌ Gagal memproses: "+str(e)[:700])
+            await Bot(TOKEN).send_message(CHAT,"❌ Gagal memproses:\n"+str(e)[-3000:])
         asyncio.run(report())
